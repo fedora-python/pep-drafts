@@ -15,7 +15,11 @@ Post-History:
 Abstract
 ========
 
-.. XXX:: Write this last :)
+.. XXX::
+
+    Write this last :)
+
+    This PEP should handle step ``1)`` from the `initial discussion`_.
 
 
 Rationale
@@ -65,7 +69,8 @@ Reference Implementation
 References
 ==========
 
-.. XXX:: Add references here
+.. _initial discussion:
+    https://mail.python.org/pipermail/python-dev/2016-July/145534.html
 
 
 Copyright

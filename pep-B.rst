@@ -13,7 +13,9 @@ Post-History:
 .. XXX::
 
     This might not end up as a PEP, since it's for pip, but it's still useful
-    to write a formal-ish document.
+    to point to a formal-ish document.
+
+    Relevant Fedora bug: https://bugzilla.redhat.com/show_bug.cgi?id=662034
 
 
 Abstract
