@@ -6,12 +6,12 @@ If you have a comment, please open an issue, or submit a pull request!
 
 To render the drafts as HTML, use ``make html``.
 To render into a ``gh-pages`` Git branch suitable for pushing,
-use ``make gh-pages``.
+``pip install --user ghp_import``, then use ``make gh-pages``.
 
 
 Useful links:
 
-PEP Guidelines (PEP 1): http://www.python.org/dev/peps/pep-0001
-PEP Template (PEP 12): https://www.python.org/dev/peps/pep-0012/
-Repository of PEPs: https://github.com/python/peps
+* PEP Guidelines (PEP 1): http://www.python.org/dev/peps/pep-0001
+* PEP Template (PEP 12): https://www.python.org/dev/peps/pep-0012/
+* Repository of PEPs: https://github.com/python/peps
 
