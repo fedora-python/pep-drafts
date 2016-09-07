@@ -72,6 +72,8 @@ Explanation of why we chose the specification: TBD.
 
 .. XXX::
 
+    Link to original discussion
+
     Mention the needs of:
         * Linux distributions
             * (Debian is already doing this)
@@ -92,7 +94,10 @@ Backwards Compatibility
 Reference Implementation
 ========================
 
-.. XXX:: link to patch (for ``importlib``?)
+Reference implementation can be found on `GitHub`_ and is also accessible in the form of a `patch`_.
+
+.. _`GitHub`: https://github.com/torsava/cpython/pull/1
+.. _`patch`: https://github.com/torsava/cpython/pull/1.patch
 
 
 References
