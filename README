@@ -1,6 +1,9 @@
 This repository collects Python Enhancement Proposal (PEP) drafts for
 collaboration before they are sent to CPython's PEP repository.
 
+Rendered versions of these documents:
+https://fedora-python.github.io/pep-drafts/index.html
+
 If you have a comment, please open an issue, or submit a pull request!
 
 
