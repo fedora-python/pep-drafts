@@ -405,119 +405,108 @@ Petr Viktorin &lt;<a class="reference external" href="mailto:pviktori&#64;redhat
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#abstract" id="id4">Abstract</a></li>
-<li><a class="reference internal" href="#motivation" id="id5">Motivation</a><ul>
-<li><a class="reference internal" href="#cpython" id="id6">CPython</a></li>
-<li><a class="reference internal" href="#linux-distributions" id="id7">Linux distributions</a></li>
+<li><a class="reference internal" href="#abstract" id="id8">Abstract</a></li>
+<li><a class="reference internal" href="#motivation" id="id9">Motivation</a><ul>
+<li><a class="reference internal" href="#cpython" id="id10">CPython</a></li>
+<li><a class="reference internal" href="#linux-and-other-distributions" id="id11">Linux and other distributions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#specification" id="id8">Specification</a></li>
-<li><a class="reference internal" href="#rationale" id="id9">Rationale</a></li>
-<li><a class="reference internal" href="#backwards-compatibility" id="id10">Backwards Compatibility</a></li>
-<li><a class="reference internal" href="#reference-implementation" id="id11">Reference Implementation</a></li>
-<li><a class="reference internal" href="#references" id="id12">References</a></li>
-<li><a class="reference internal" href="#copyright" id="id13">Copyright</a></li>
+<li><a class="reference internal" href="#specification" id="id12">Specification</a></li>
+<li><a class="reference internal" href="#rationale" id="id13">Rationale</a></li>
+<li><a class="reference internal" href="#backwards-compatibility" id="id14">Backwards Compatibility</a></li>
+<li><a class="reference internal" href="#reference-implementation" id="id15">Reference Implementation</a></li>
+<li><a class="reference internal" href="#references" id="id16">References</a></li>
+<li><a class="reference internal" href="#copyright" id="id17">Copyright</a></li>
 </ul>
 </div>
 <div class="warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">TODO
-1. Don't forget 2 spaces after every sentence (Python developers should really read a manual of Style).
+1. Don't forget 2 spaces after every sentence (Python developers should really read a manual of style).
 2. Text should be longer than 70 but no longer than 79 characters.</p>
 </div>
 <div class="section" id="abstract">
-<h1><a class="toc-backref" href="#id4">Abstract</a></h1>
+<h1><a class="toc-backref" href="#id8">Abstract</a></h1>
 <div class="admonition">
 <p class="first admonition-title">XXX</p>
 <p>Write this last :)</p>
 <p>(~200 words)</p>
-<p class="last">This PEP should handle step <tt class="docutils literal">1)</tt> from the <a class="reference external" href="https://mail.python.org/pipermail/python-dev/2016-July/145534.html">initial discussion</a> <a class="footnote-reference" href="#id2" id="id3">[2]</a>.</p>
+<p class="last">This PEP should handle step <tt class="docutils literal">1)</tt> from the initial discussion (link?).</p>
 </div>
 </div>
 <div class="section" id="motivation">
-<h1><a class="toc-backref" href="#id5">Motivation</a></h1>
-<!-- The motivation is critical for PEPs that want to change the Python language. It should clearly explain why the existing language specification is inadequate to address the problem that the PEP solves. PEP submissions without sufficient motivation may be rejected outright. -->
-<p>There are several use cases for including only a subset of Python's standard library. One is when a <em>stdlib</em> module with missing dependencies is skipped during the Python build process. Another is that a considerable amount of space can be saved by not distributing irrelevant parts of the standard library, such as <tt class="docutils literal">TkInter</tt> on headless servers.</p>
-<p>However, there is so far no formal specification of how to properly implement distribution of a subset of the standard library. Namely, how to safely handle attempts to import a missing <em>stdlib</em> module.</p>
+<h1><a class="toc-backref" href="#id9">Motivation</a></h1>
+<!-- The motivation is critical for PEPs that want to change the Python language.  It should clearly explain why the existing language specification is inadequate to address the problem that the PEP solves.  PEP submissions without sufficient motivation may be rejected outright. -->
+<p>There are several use cases for including only a subset of Python's standard library.  For example, when a <em>stdlib</em> module with missing dependencies is skipped during the Python build process.  For another, a considerable amount of space can be saved by not distributing irrelevant parts of the standard library, such as <tt class="docutils literal">TkInter</tt> on headless servers.</p>
+<p>However, there is so far no formal specification of how to properly implement distribution of a subset of the standard library.  Namely, how to safely handle attempts to import a missing <em>stdlib</em> module, and display an informative error message.</p>
 <div class="section" id="cpython">
-<h2><a class="toc-backref" href="#id6">CPython</a></h2>
-<p>When one of Python standard library modules (such as <tt class="docutils literal">_sqlite3</tt>) cannot be compiled during a Python build because of missing dependencies (e.g. SQLite header files), the module is simply skipped. If you then install this Python, and use it to try to import one of the missing modules, Python will go through the <tt class="docutils literal">sys.path</tt> entries looking for it. It won't find it among the <em>stdlib</em> modules and thus it will continue onto <tt class="docutils literal"><span class="pre">site-packages</span></tt> and fail with an <tt class="docutils literal">ImportError</tt> if it doesn't find it.</p>
-<p>This introduces a possible security issue: <tt class="docutils literal"><span class="pre">site-packages</span></tt> can contain broken or even malicious code.</p>
+<h2><a class="toc-backref" href="#id10">CPython</a></h2>
+<p>When one of Python standard library modules (such as <tt class="docutils literal">_sqlite3</tt>) cannot be compiled during a Python build because of missing dependencies (e.g. SQLite header files), the module is simply skipped.</p>
+<p>If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the <tt class="docutils literal">sys.path</tt> entries looking for it.  It won't find it among the <em>stdlib</em> modules and thus it will continue onto <tt class="docutils literal"><span class="pre">site-packages</span></tt> and fail with an <tt class="docutils literal">ImportError</tt> if it doesn't find it.</p>
+<p>This can confuse users who may not understand why a cleanly build Python is missing standard library modules.  In addition it introduces a possible security issue: <tt class="docutils literal"><span class="pre">site-packages</span></tt> can contain broken or even malicious code that may be, unbeknownst to the user, imported instead of the missing <em>stdlib</em> module.</p>
 </div>
-<div class="section" id="linux-distributions">
-<h2><a class="toc-backref" href="#id7">Linux distributions</a></h2>
-<p>Many Linux distributions are already separating out parts of the standard library to standalone packages. Among the most commonly excluded modules are the <tt class="docutils literal">TkInter</tt> module, since it draws in a dependency on the graphical environment, and the <tt class="docutils literal">test</tt> module, as it only serves to test Python internally and is about as big as the rest of the standard library put together.</p>
-<p>The methods of omission of these modules differ. For example, Debian patches the file <tt class="docutils literal">Lib/tkinter/__init__.py</tt> to envelop the line <tt class="docutils literal">import _tkinter</tt> in a <em>try-except</em> block and upon encountering an <tt class="docutils literal">ImportError</tt> it simply adds the following to the error message: <tt class="docutils literal">please install the <span class="pre">python3-tk</span> package</tt> <a class="footnote-reference" href="#debian-patch" id="id1">[1]</a>. Fedora and other distributions simply don't include the omitted modules and leave the rest as is.</p>
-<p>Both these methods, nevertheless, introduce the aforementioned security issue of possibly importing missing <em>stdlib</em> modules from <tt class="docutils literal"><span class="pre">site-packages</span></tt>.</p>
+<div class="section" id="linux-and-other-distributions">
+<h2><a class="toc-backref" href="#id11">Linux and other distributions</a></h2>
+<p>Many Linux and other distributions are already separating out parts of the standard library to standalone packages.  Among the most commonly excluded modules are the <tt class="docutils literal">TkInter</tt> module, since it draws in a dependency on the graphical environment, and the <tt class="docutils literal">test</tt> module, as it only serves to test Python internally and is about as big as the rest of the standard library put together.</p>
+<p>The methods of omission of these modules differ.  For example, Debian patches the file <tt class="docutils literal">Lib/tkinter/__init__.py</tt> to envelop the line <tt class="docutils literal">import _tkinter</tt> in a <em>try-except</em> block and upon encountering an <tt class="docutils literal">ImportError</tt> it simply adds the following to the error message: <tt class="docutils literal">please install the <span class="pre">python3-tk</span> package</tt> <a class="footnote-reference" href="#debian-patch" id="id1">[1]</a>.  Fedora and other distributions simply don't include the omitted modules, potentially leaving users baffled as to where to find them.</p>
+<p>In addition, both these methods also introduce the aforementioned security issue of possibly importing an insecure <tt class="docutils literal"><span class="pre">site-packages</span></tt> module in lieu of the missing <em>stdlib</em> module.</p>
 </div>
 </div>
 <div class="section" id="specification">
-<h1><a class="toc-backref" href="#id8">Specification</a></h1>
-<!-- The technical specification should describe the syntax and semantics of any new language feature. The specification should be detailed enough to allow competing, interoperable implementations for at least the current major Python platforms (CPython, Jython, IronPython, PyPy). -->
-<p>When, for any reason, a standard library module is not to be included with the rest, a file with it's name and an extension <tt class="docutils literal">.missing.py</tt> should be created and placed in the <em>stdlib</em> directory.</p>
-<p>When Python tries to import a standard library module, it will look first for appropriately named files with the valid extensions (<tt class="docutils literal"><span class="pre">.*.so</span></tt>, <tt class="docutils literal">.so</tt>, <tt class="docutils literal">.py</tt>, <tt class="docutils literal">.pyc</tt>) and only if it still doesn't find the given module will it look for a file with the extension <tt class="docutils literal">.missing.py</tt> and import it if found.</p>
-<p>The file with the <tt class="docutils literal">.missing.py</tt> extension can contain anything the distributor wishes, however, it <em>should</em> raise an <tt class="docutils literal">ImportError</tt>.</p>
+<h1><a class="toc-backref" href="#id12">Specification</a></h1>
+<!-- The technical specification should describe the syntax and semantics of any new language feature.  The specification should be detailed enough to allow competing, interoperable implementations for at least the current major Python platforms (CPython, Jython, IronPython, PyPy). -->
+<p>When, for any reason, a standard library module is not to be included with the rest, a file with it's name and an extension <tt class="docutils literal">.missing.py</tt> should be created and placed in the <em>stdlib</em> directory or any other location on <tt class="docutils literal">sys.path</tt> the module would have occupied.</p>
+<p>When Python tries to import a module <tt class="docutils literal">XYZ</tt>, it goes through the entries in <tt class="docutils literal">sys.path</tt> and in each location looks for a file whose name is <tt class="docutils literal">XYZ</tt> with one of the valid Python extensions (<tt class="docutils literal"><span class="pre">.*.so</span></tt>, <tt class="docutils literal">.so</tt>, <tt class="docutils literal">.py</tt>, <tt class="docutils literal"><span class="pre">.*.pyc</span></tt>, <tt class="docutils literal">.pyc</tt>).  If none of them are found in the currently searched location, Python will now continue by looking for a file named <tt class="docutils literal">XYZ.missing.py</tt> in the same location, and import it if found.  Due to looking for the <tt class="docutils literal">.missing.py</tt> file last in each <tt class="docutils literal">sys.path</tt> location, the missing file will never shadow an actually installed module in any given location.</p>
+<p>The file with the <tt class="docutils literal">.missing.py</tt> extension can contain anything the distributor wishes, however, it <em>should</em> raise an <tt class="docutils literal">ImportError</tt> with a helpful error message.</p>
 </div>
 <div class="section" id="rationale">
-<h1><a class="toc-backref" href="#id9">Rationale</a></h1>
-<!-- The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages.
+<h1><a class="toc-backref" href="#id13">Rationale</a></h1>
+<!-- The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made.  It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages.
 The rationale should provide evidence of consensus within the community and discuss important objections or concerns raised during discussion. -->
-<p>Explanation of why we chose the specification: TBD.</p>
-<div class="admonition">
-<p class="first admonition-title">XXX</p>
-<dl class="docutils">
-<dt>Mention the needs of:</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>Linux distributions</dt>
-<dd><ul class="first last simple">
-<li>(Debian is already doing this)</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p class="first">CPython (modules with missing dependencies may be skipped
-during build)</p>
-</li>
-</ul>
-</dd>
-</dl>
-<p class="last">(The MicroPython and AppInstaller use cases are not served by this
-particular PEP.)</p>
-</div>
+<p>The mechanism of handling missing standard library modules through the use of the <tt class="docutils literal">.missing.py</tt> files was chosen due to its advantages both for CPython itself and for Linux and other distributions that are packaging it.</p>
+<p>First, this implementation solves the security issue of importing, unbeknownst to the user, a possibly insecure module from <tt class="docutils literal"><span class="pre">site-packages</span></tt> instead of the missing standard library module.  Now, Python will import the <tt class="docutils literal">.missing.py</tt> file and won't ever look for a <em>stdlib</em> module in <tt class="docutils literal"><span class="pre">site-packages</span></tt>.</p>
+<p>Another advantage is that the standard library module can be subsequently installed simply by putting the module file in it's appropriate location, which will then take precedence over the corresponding <tt class="docutils literal">.missing.py</tt> file.</p>
+<p>In addition, this method of handling missing <em>stdlib</em> modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.</p>
+<p>Lastly, due to the nature of handling missing <em>stdlib</em> modules through the use of separate <tt class="docutils literal">.missing.py</tt> files, the content of the file can be customized by the packager to provide any desirable behaviour.  Beginning with providing a tailor-made, actionable error message—e.g. <em>&quot;To use tkinter, please run `dnf install python3-tkinter`&quot;</em>—and possibly ending with automatic installation of the missing module.</p>
+<p>The idea behind this PEP was discussed on the <a class="reference external" href="https://mail.python.org/pipermail/python-dev/2016-July/145534.html">python-dev mailing list</a> <a class="footnote-reference" href="#id2" id="id3">[2]</a>.</p>
 </div>
 <div class="section" id="backwards-compatibility">
-<h1><a class="toc-backref" href="#id10">Backwards Compatibility</a></h1>
-<div class="admonition">
-<p class="first admonition-title">XXX</p>
-<p class="last">should not be a problem</p>
-</div>
+<h1><a class="toc-backref" href="#id14">Backwards Compatibility</a></h1>
+<p>No problems with backwards compatibility are expected.  Distributions that are already patching Python modules to provide custom handling of missing dependencies can continue to do so unhindered.</p>
 </div>
 <div class="section" id="reference-implementation">
-<h1><a class="toc-backref" href="#id11">Reference Implementation</a></h1>
-<div class="admonition">
-<p class="first admonition-title">XXX</p>
-<p class="last">link to patch (for <tt class="docutils literal">importlib</tt>?)</p>
-</div>
+<h1><a class="toc-backref" href="#id15">Reference Implementation</a></h1>
+<p>Reference implementation can be found on <a class="reference external" href="https://github.com/torsava/cpython/pull/1">GitHub</a> <a class="footnote-reference" href="#id4" id="id5">[3]</a> and is also accessible in the form of a <a class="reference external" href="https://github.com/torsava/cpython/pull/1.patch">patch</a> <a class="footnote-reference" href="#id6" id="id7">[4]</a>.</p>
 </div>
 <div class="section" id="references">
-<h1><a class="toc-backref" href="#id12">References</a></h1>
+<h1><a class="toc-backref" href="#id16">References</a></h1>
 <table class="docutils footnote" frame="void" id="debian-patch" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff">http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff</a></td></tr>
 </tbody>
 </table>
-<!-- TODO Where to reference this? -->
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td><a class="reference external" href="https://mail.python.org/pipermail/python-dev/2016-July/145534.html">https://mail.python.org/pipermail/python-dev/2016-July/145534.html</a></td></tr>
 </tbody>
 </table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[3]</a></td><td><a class="reference external" href="https://github.com/torsava/cpython/pull/1">https://github.com/torsava/cpython/pull/1</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[4]</a></td><td><a class="reference external" href="https://github.com/torsava/cpython/pull/1.patch">https://github.com/torsava/cpython/pull/1.patch</a></td></tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="copyright">
-<h1><a class="toc-backref" href="#id13">Copyright</a></h1>
+<h1><a class="toc-backref" href="#id17">Copyright</a></h1>
 <p>This document has been placed in the public domain.</p>
 <!-- Local Variables:
 mode: indented-text
