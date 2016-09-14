@@ -58,9 +58,9 @@ Specification
 
 When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` should be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise an ``ImportError`` with a helpful error message.
 
-Currently, when Python tries to import a module ``XYZ``, the FileFinder path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.py``, ``.pyc``, ..., ``.so``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
+Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.py``, ``.pyc``, ..., ``.so``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
 
-The ``.missing.py`` extension will be added to the end of the list, and configured to be handled by SourceFileLoader.  Thus, if a module is not found in its proper location, the ``XYZ.missing.py`` file is found and executed, and further locations are not searched.
+The ``.missing.py`` extension will be added to the end of the list, and configured to be handled by ``SourceFileLoader``.  Thus, if a module is not found in its proper location, the ``XYZ.missing.py`` file is found and executed, and further locations are not searched.
 
 The CPython build system will be modified to generate ``.missing.py`` files for optional modules that were not built.
 
@@ -72,13 +72,13 @@ Rationale
 
 The mechanism of handling missing standard library modules through the use of the ``.missing.py`` files was chosen due to its advantages both for CPython itself and for Linux and other distributions that are packaging it.
 
-The missing pieces of standard library module can be subsequently installed simply by putting the module file in it's appropriate location, which will then take precedence over the corresponding ``.missing.py`` file.  This makes installation simple for Linux package managers.
+The missing pieces of standard library modules can be subsequently installed simply by putting the module files in their appropriate location, which will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
 
 This mechanism also solves the minor issue of importing a module from ``site-packages`` that shadows a standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
 
 In addition, this method of handling missing *stdlib* modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.
 
-The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise ImportError with an appropriate message, there is no reason to limit customization options -- especially since importing a Python module is trivial to implement.
+The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise an ``ImportError`` with an appropriate message, there is no reason to limit customization options—especially since importing a Python module is trivial to implement.
 
 
 Backwards Compatibility
