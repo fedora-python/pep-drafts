@@ -40,7 +40,7 @@ CPython
 -------
 When one of Python standard library modules (such as ``_sqlite3``) cannot be compiled during a Python build because of missing dependencies (e.g. SQLite header files), the module is simply skipped.
 
-If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the ``sys.path`` entries looking for it.  It won't find it among the *stdlib* modules and thus it will continue onto ``site-packages`` and fail with an ``ImportError`` if it doesn't find it.
+If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the ``sys.path`` entries looking for it.  It won't find it among the *stdlib* modules and thus it will continue onto ``site-packages`` and fail with a ``ModuleNotFoundError`` if it doesn't find it.
 
 This can confuse users who may not understand why a cleanly built Python is missing standard library modules.
 
@@ -56,9 +56,9 @@ Specification
 =============
 .. The technical specification should describe the syntax and semantics of any new language feature.  The specification should be detailed enough to allow competing, interoperable implementations for at least the current major Python platforms (CPython, Jython, IronPython, PyPy).
 
-When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` should be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise an ``ImportError`` with a helpful error message.
+When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` should be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise ``ModuleNotFoundError`` with a helpful error message.
 
-Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.py``, ``.pyc``, ..., ``.so``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
+Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.so``, ..., ``.py``, ..., ``.pyc``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
 
 The ``.missing.py`` extension will be added to the end of the list, and configured to be handled by ``SourceFileLoader``.  Thus, if a module is not found in its proper location, the ``XYZ.missing.py`` file is found and executed, and further locations are not searched.
 
@@ -74,12 +74,16 @@ The mechanism of handling missing standard library modules through the use of th
 
 The missing pieces of standard library modules can be subsequently installed simply by putting the module files in their appropriate location, which will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
 
-This mechanism also solves the minor issue of importing a module from ``site-packages`` that shadows a standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
+This mechanism also solves the minor issue of importing a module from ``site-packages`` with the same name as a missing standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
 
 In addition, this method of handling missing *stdlib* modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.
 
-The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise an ``ImportError`` with an appropriate message, there is no reason to limit customization options—especially since importing a Python module is trivial to implement.
+The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise ``ModuleNotFoundError`` with an appropriate message, there is no reason to limit customization options—especially since importing a Python module with an additional suffix is, implementation-wise, a small change in importlib.
 
+Ideas leading up to this PEP was discussed on the `python-dev mailing list`_.
+
+.. _`python-dev mailing list`:
+   https://mail.python.org/pipermail/python-dev/2016-July/145534.html
 
 Backwards Compatibility
 =======================
