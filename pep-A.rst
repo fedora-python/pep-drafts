@@ -78,7 +78,7 @@ This mechanism also solves the minor issue of importing a module from ``site-pac
 
 In addition, this method of handling missing *stdlib* modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.
 
-The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise a ``ModuleNotFoundError`` with an appropriate message, there is no reason to limit customization options—especially since importing a Python module with an additional suffix is, implementation-wise, a small change in importlib.
+The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise a ``ModuleNotFoundError`` with an appropriate message, there is no reason to limit customization options.
 
 Ideas leading up to this PEP were discussed on the `python-dev mailing list`_.
 
