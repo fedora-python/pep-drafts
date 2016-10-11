@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="install_locations.css" media="screen" />
+    </head>
+    <body>
+        <h2>Fedora current</h2>
+        <div id="two">
+            <div>
+              <h3>prefix/.../site_packages</h3>
+              <p>system<br>sudo pip<br>distutils</p>
+            </div>
+            <div>
+              <h3>local_prefix/.../site_packages</h3>
+              <p>from source</p>
+            </div>
+        </div>
+        <h2>Debian (Solution 1)</h2>
+        <div id="four">
+            <div>
+              <h3>prefix/.../dist_packages</h3>
+              <p>system<p>
+            </div>
+            <div>
+              <h3>local_prefix/.../dist_packages</h3>
+              <p>distutils<br>sudo pip</p>
+            </div>
+            <div>
+              <h3>prefix/site_packages</h3>
+            </div>
+            <div>
+              <h3>local_prefix/.../site_packages</h3>
+              <p>from source</p>
+            </div>
+        </div>
+       <h2>Solution 2</h2>
+        <div id="two">
+            <div>
+              <h3>prefix/.../site_packages</h3>
+              <p>system</p>
+            </div>
+            <div>
+              <h3>local_prefix/.../site_packages</h3>
+              <p>from source<br>sudo pip<br>distutils</p>
+            </div>
+        </div>
+        <p>prefix = /usr<br>local_prefix = /usr/local</p>
+ 
+        <p>system = dnf, apt-get install<br>
+           distutils = setup.py install<br>
+           from source = setup.py install for python built from source
+        </p>
+ 
+    </body>
+</html>

@@ -1,0 +1,24 @@
+#four {
+    position: static;
+    width: 800px;
+    height: 300px;
+}
+
+#two {
+    position: static;
+    width: 800px;
+    height: 150px;
+}
+
+div div {
+    position: static;
+    width: 400px;
+    height: 150px;
+    outline: 1px solid;
+    float: left;
+}
+
+p, h3 {
+    padding-left: 10px
+}
+
