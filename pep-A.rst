@@ -20,15 +20,14 @@ Post-History:
 Abstract
 ========
 
-Python is sometimes being distributed without its full standard library.  However, there is as of yet no standardized way of dealing with importing of a missing standard library module.  This PEP proposes a mechanism for identifying which standard library modules are missing and puts forth a method of how importing of missing standard library modules should be handled.
+Python is sometimes being distributed without its full standard library.  However, there is as of yet no standardized way of dealing with importing a missing standard library module.  This PEP proposes a mechanism for identifying which standard library modules are missing and puts forth a method of how attempts to import a missing standard library module should be handled.
 
 
 Motivation
 ==========
 .. The motivation is critical for PEPs that want to change the Python language.  It should clearly explain why the existing language specification is inadequate to address the problem that the PEP solves.  PEP submissions without sufficient motivation may be rejected outright.
 
-There are several use cases for including only a subset of Python's standard library.  For example, when a *stdlib* module with missing dependencies is skipped during the Python build process.  For another, a considerable amount of space can be saved by not distributing irrelevant parts of the standard library, such as ``tkinter`` on headless servers.
-
+There are several use cases for including only a subset of Python's standard library.
 However, there is so far no formal specification of how to properly implement distribution of a subset of the standard library.  Namely, how to safely handle attempts to import a missing *stdlib* module, and display an informative error message.
 
 
@@ -54,9 +53,6 @@ Specification
 
 When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` shall be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise a ModuleNotFoundError_ with a helpful error message.
 
-.. _ModuleNotFoundError:
-   https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
-
 Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.so``, ..., ``.py``, ..., ``.pyc``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
 
 The ``.missing.py`` extension will be added to the end of the list, and configured to be handled by ``SourceFileLoader``.  Thus, if a module is not found in its proper location, the ``XYZ.missing.py`` file is found and executed, and further locations are not searched.
@@ -71,7 +67,7 @@ Rationale
 
 The mechanism of handling missing standard library modules through the use of the ``.missing.py`` files was chosen due to its advantages both for CPython itself and for Linux and other distributions that are packaging it.
 
-The missing pieces of standard library modules can be subsequently installed simply by putting the module files in their appropriate location, which will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
+Missing pieces of the standard library modules can be subsequently installed simply by putting the module files in their appropriate location. They will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
 
 This mechanism also solves the minor issue of importing a module from ``site-packages`` with the same name as a missing standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
 
@@ -104,6 +100,9 @@ References
 ==========
 
 .. [#debian-patch] http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff
+
+.. _ModuleNotFoundError:
+   https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
 
 
 Copyright
