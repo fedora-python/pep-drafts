@@ -16,16 +16,12 @@ Post-History:
     1. Don't forget 2 spaces after every sentence (Python developers should really read a manual of style).
     2. Text should be longer than 70 but no longer than 79 characters.
 
+
 Abstract
 ========
 
-.. XXX::
+Python is sometimes being distributed without its full standard library.  However, there is as of yet no standardized way of dealing with importing of a missing standard library module.  This PEP proposes a mechanism for identifying which standard library modules are missing and puts forth a method of how importing of missing standard library modules should be handled.
 
-    Write this last :)
-
-    (~200 words)
-
-    This PEP should handle step ``1)`` from the initial discussion (link?).
 
 Motivation
 ==========
@@ -56,7 +52,10 @@ Specification
 =============
 .. The technical specification should describe the syntax and semantics of any new language feature.  The specification should be detailed enough to allow competing, interoperable implementations for at least the current major Python platforms (CPython, Jython, IronPython, PyPy).
 
-When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` should be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise a ``ModuleNotFoundError`` with a helpful error message.
+When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` shall be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise a ModuleNotFoundError_ with a helpful error message.
+
+.. _ModuleNotFoundError:
+   https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
 
 Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.so``, ..., ``.py``, ..., ``.pyc``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
 
@@ -78,12 +77,13 @@ This mechanism also solves the minor issue of importing a module from ``site-pac
 
 In addition, this method of handling missing *stdlib* modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.
 
-The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise a ``ModuleNotFoundError`` with an appropriate message, there is no reason to limit customization options.
+The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise a ModuleNotFoundError_ with an appropriate message, there is no reason to limit customization options.
 
 Ideas leading up to this PEP were discussed on the `python-dev mailing list`_.
 
 .. _`python-dev mailing list`:
    https://mail.python.org/pipermail/python-dev/2016-July/145534.html
+
 
 Backwards Compatibility
 =======================
