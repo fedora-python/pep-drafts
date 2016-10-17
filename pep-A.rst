@@ -11,72 +11,113 @@ Created: 5-Sep-2016
 Python-Version: 3.6
 Post-History: 
 
-.. warning::
-    TODO
-    1. Don't forget 2 spaces after every sentence (Python developers should really read a manual of style).
-    2. Text should be longer than 70 but no longer than 79 characters.
-
 
 Abstract
 ========
 
-Python is sometimes being distributed without its full standard library.  However, there is as of yet no standardized way of dealing with importing a missing standard library module.  This PEP proposes a mechanism for identifying which standard library modules are missing and puts forth a method of how attempts to import a missing standard library module should be handled.
+Python is sometimes being distributed without its full standard library.
+However, there is as of yet no standardized way of dealing with importing a
+missing standard library module.  This PEP proposes a mechanism for identifying
+which standard library modules are missing and puts forth a method of how
+attempts to import a missing standard library module should be handled.
 
 
 Motivation
 ==========
-.. The motivation is critical for PEPs that want to change the Python language.  It should clearly explain why the existing language specification is inadequate to address the problem that the PEP solves.  PEP submissions without sufficient motivation may be rejected outright.
 
-There are several use cases for including only a subset of Python's standard library.
-However, there is so far no formal specification of how to properly implement distribution of a subset of the standard library.  Namely, how to safely handle attempts to import a missing *stdlib* module, and display an informative error message.
+There are several use cases for including only a subset of Python's standard
+library.  However, there is so far no formal specification of how to properly
+implement distribution of a subset of the standard library.  Namely, how to
+safely handle attempts to import a missing *stdlib* module, and display an
+informative error message.
 
 
 CPython
 -------
-When one of Python standard library modules (such as ``_sqlite3``) cannot be compiled during a Python build because of missing dependencies (e.g. SQLite header files), the module is simply skipped.
 
-If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the ``sys.path`` entries looking for it.  It won't find it among the *stdlib* modules and thus it will continue onto ``site-packages`` and fail with a ModuleNotFoundError_ if it doesn't find it.
+When one of Python standard library modules (such as ``_sqlite3``) cannot be
+compiled during a Python build because of missing dependencies (e.g. SQLite
+header files), the module is simply skipped.
+
+If you then install this compiled Python and use it to try to import one of the
+missing modules, Python will go through the ``sys.path`` entries looking for
+it.  It won't find it among the *stdlib* modules and thus it will continue onto
+``site-packages`` and fail with a ModuleNotFoundError_ if it doesn't find it.
 
 .. _ModuleNotFoundError:
    https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
 
-This can confuse users who may not understand why a cleanly built Python is missing standard library modules.
+This can confuse users who may not understand why a cleanly built Python is
+missing standard library modules.
 
 
 Linux and other distributions
 -----------------------------
-Many Linux and other distributions are already separating out parts of the standard library to standalone packages.  Among the most commonly excluded modules are the ``tkinter`` module, since it draws in a dependency on the graphical environment, and the ``test`` package, as it only serves to test Python internally and is about as big as the rest of the standard library put together.
 
-The methods of omission of these modules differ.  For example, Debian patches the file ``Lib/tkinter/__init__.py`` to envelop the line ``import _tkinter`` in a *try-except* block and upon encountering an ``ImportError`` it simply adds the following to the error message: ``please install the python3-tk package`` [#debian-patch]_.  Fedora and other distributions simply don't include the omitted modules, potentially leaving users baffled as to where to find them.
+Many Linux and other distributions are already separating out parts of the
+standard library to standalone packages.  Among the most commonly excluded
+modules are the ``tkinter`` module, since it draws in a dependency on the
+graphical environment, and the ``test`` package, as it only serves to test
+Python internally and is about as big as the rest of the standard library put
+together.
+
+The methods of omission of these modules differ.  For example, Debian patches
+the file ``Lib/tkinter/__init__.py`` to envelop the line ``import _tkinter`` in
+a *try-except* block and upon encountering an ``ImportError`` it simply adds
+the following to the error message: ``please install the python3-tk package``
+[#debian-patch]_.  Fedora and other distributions simply don't include the
+omitted modules, potentially leaving users baffled as to where to find them.
 
 
 Specification
 =============
-.. The technical specification should describe the syntax and semantics of any new language feature.  The specification should be detailed enough to allow competing, interoperable implementations for at least the current major Python platforms (CPython, Jython, IronPython, PyPy).
 
-When, for any reason, a standard library module is not to be included with the rest, a file with its name and the extension ``.missing.py`` shall be created and placed in the directory the module itself would have occupied.  This file can contain any Python code, however, it *should* raise a ModuleNotFoundError_ with a helpful error message.
+When, for any reason, a standard library module is not to be included with the
+rest, a file with its name and the extension ``.missing.py`` shall be created
+and placed in the directory the module itself would have occupied.  This file
+can contain any Python code, however, it *should* raise a ModuleNotFoundError_
+with a helpful error message.
 
-Currently, when Python tries to import a module ``XYZ``, the ``FileFinder`` path hook goes through the entries in ``sys.path``, and in each location looks for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.so``, ..., ``.py``, ..., ``.pyc``).  The suffixes are tried in order.  If none of them are found, Python goes on to try the next directory in ``sys.path``.
+Currently, when Python tries to import a module ``XYZ``, the ``FileFinder``
+path hook goes through the entries in ``sys.path``, and in each location looks
+for a file whose name is ``XYZ`` with one of the valid suffixes (e.g. ``.so``,
+..., ``.py``, ..., ``.pyc``).  The suffixes are tried in order.  If none of
+them are found, Python goes on to try the next directory in ``sys.path``.
 
-The ``.missing.py`` extension will be added to the end of the list, and configured to be handled by ``SourceFileLoader``.  Thus, if a module is not found in its proper location, the ``XYZ.missing.py`` file is found and executed, and further locations are not searched.
+The ``.missing.py`` extension will be added to the end of the list, and
+configured to be handled by ``SourceFileLoader``.  Thus, if a module is not
+found in its proper location, the ``XYZ.missing.py`` file is found and
+executed, and further locations are not searched.
 
-The CPython build system will be modified to generate ``.missing.py`` files for optional modules that were not built.
+The CPython build system will be modified to generate ``.missing.py`` files for
+optional modules that were not built.
 
 
 Rationale
 =========
-.. The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made.  It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages.
-   The rationale should provide evidence of consensus within the community and discuss important objections or concerns raised during discussion.
 
-The mechanism of handling missing standard library modules through the use of the ``.missing.py`` files was chosen due to its advantages both for CPython itself and for Linux and other distributions that are packaging it.
+The mechanism of handling missing standard library modules through the use of
+the ``.missing.py`` files was chosen due to its advantages both for CPython
+itself and for Linux and other distributions that are packaging it.
 
-The missing pieces of the standard library can be subsequently installed simply by putting the module files in their appropriate location. They will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
+The missing pieces of the standard library can be subsequently installed simply
+by putting the module files in their appropriate location.  They will then take
+precedence over the corresponding ``.missing.py`` files.  This makes
+installation simple for Linux package managers.
 
-This mechanism also solves the minor issue of importing a module from ``site-packages`` with the same name as a missing standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
+This mechanism also solves the minor issue of importing a module from
+``site-packages`` with the same name as a missing standard library module.
+Now, Python will import the ``.missing.py`` file and won't ever look for a
+*stdlib* module in ``site-packages``.
 
-In addition, this method of handling missing *stdlib* modules can be implemented in a succinct, non-intrusive way in CPython, and thus won't add to the complexity of the existing code base.
+In addition, this method of handling missing *stdlib* modules can be
+implemented in a succinct, non-intrusive way in CPython, and thus won't add to
+the complexity of the existing code base.
 
-The ``.missing.py`` file can be customized by the packager to provide any desirable behaviour.  While we strongly recommend that these files only raise a ModuleNotFoundError_ with an appropriate message, there is no reason to limit customization options.
+The ``.missing.py`` file can be customized by the packager to provide any
+desirable behaviour.  While we strongly recommend that these files only raise a
+ModuleNotFoundError_ with an appropriate message, there is no reason to limit
+customization options.
 
 Ideas leading up to this PEP were discussed on the `python-dev mailing list`_.
 
@@ -87,13 +128,16 @@ Ideas leading up to this PEP were discussed on the `python-dev mailing list`_.
 Backwards Compatibility
 =======================
 
-No problems with backwards compatibility are expected.  Distributions that are already patching Python modules to provide custom handling of missing dependencies can continue to do so unhindered.
+No problems with backwards compatibility are expected.  Distributions that are
+already patching Python modules to provide custom handling of missing
+dependencies can continue to do so unhindered.
 
 
 Reference Implementation
 ========================
 
-Reference implementation can be found on `GitHub`_ and is also accessible in the form of a `patch`_.
+Reference implementation can be found on `GitHub`_ and is also accessible in
+the form of a `patch`_.
 
 .. _`GitHub`: https://github.com/torsava/cpython/pull/1
 .. _`patch`: https://github.com/torsava/cpython/pull/1.patch
@@ -102,7 +146,8 @@ Reference implementation can be found on `GitHub`_ and is also accessible in the
 References
 ==========
 
-.. [#debian-patch] http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff
+.. [#debian-patch]
+   http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff
 
 
 Copyright
