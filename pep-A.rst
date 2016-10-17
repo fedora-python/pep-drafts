@@ -35,7 +35,10 @@ CPython
 -------
 When one of Python standard library modules (such as ``_sqlite3``) cannot be compiled during a Python build because of missing dependencies (e.g. SQLite header files), the module is simply skipped.
 
-If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the ``sys.path`` entries looking for it.  It won't find it among the *stdlib* modules and thus it will continue onto ``site-packages`` and fail with a ``ModuleNotFoundError`` if it doesn't find it.
+If you then install this compiled Python and use it to try to import one of the missing modules, Python will go through the ``sys.path`` entries looking for it.  It won't find it among the *stdlib* modules and thus it will continue onto ``site-packages`` and fail with a ModuleNotFoundError_ if it doesn't find it.
+
+.. _ModuleNotFoundError:
+   https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
 
 This can confuse users who may not understand why a cleanly built Python is missing standard library modules.
 
@@ -67,7 +70,7 @@ Rationale
 
 The mechanism of handling missing standard library modules through the use of the ``.missing.py`` files was chosen due to its advantages both for CPython itself and for Linux and other distributions that are packaging it.
 
-Missing pieces of the standard library modules can be subsequently installed simply by putting the module files in their appropriate location. They will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
+The missing pieces of the standard library can be subsequently installed simply by putting the module files in their appropriate location. They will then take precedence over the corresponding ``.missing.py`` files.  This makes installation simple for Linux package managers.
 
 This mechanism also solves the minor issue of importing a module from ``site-packages`` with the same name as a missing standard library module.  Now, Python will import the ``.missing.py`` file and won't ever look for a *stdlib* module in ``site-packages``.
 
@@ -100,9 +103,6 @@ References
 ==========
 
 .. [#debian-patch] http://bazaar.launchpad.net/~doko/python/pkg3.5-debian/view/head:/patches/tkinter-import.diff
-
-.. _ModuleNotFoundError:
-   https://docs.python.org/3.7/library/exceptions.html#ModuleNotFoundError
 
 
 Copyright
