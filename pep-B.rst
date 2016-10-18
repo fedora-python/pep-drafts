@@ -156,6 +156,24 @@ Specification
     `Visualization <../install_locations.html>`_
 
 
+    **Meeting conclusion:**
+        Patches of Python, distutils or pip not needed.
+         - split binaries of system-python and python
+         - set sys.prefix of python to /usr/local
+         - set sys.prefix of system_python to /usr
+         - require system_python in python
+         - include path to system-python libs (/usr/lib/...) in sys.path of python (implicitly set
+           to /usr/local/... only)
+         - exclude everything except path to system-python libs from sys.path of system-python
+         - change macro %{__python3} to system-python (py3_install, py3_build will work automaticlly)
+
+        sudo pip, python setup.py install will use python. Install locations from Solution2 will be
+        used.
+
+        Problem with scripts that only require usr/bin/python3
+
+
+
 
 Backwards Compatibility
 =======================
