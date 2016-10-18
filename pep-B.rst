@@ -153,6 +153,8 @@ Specification
          - Implement logic to dnf, distutils to check if package isn't already installed
          - INSTALLER file could help to resolve updating and removing of packages
 
+    `Visualization <../install_locations.html>`_
+
 
 
 Backwards Compatibility
