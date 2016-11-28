@@ -1,14 +1,14 @@
-PEP: XXX
+PEP: 534
 Title: Distributing a Subset of the Standard Library
 Version: $Revision$
 Last-Modified: $Date$
 Author: Tomáš Orsava <torsava@redhat.com>,
-        Petr Viktorin <pviktori@redhat.com>
+        Petr Viktorin <encukou@gmail.com>
 Status: Draft
 Type: Standards Track
 Content-Type: text/x-rst
 Created: 5-Sep-2016
-Python-Version: 3.6
+Python-Version: 3.7
 Post-History: 
 
 
