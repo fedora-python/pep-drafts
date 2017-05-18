@@ -8,14 +8,14 @@ to templates.  DO NOT USE THIS HTML FILE AS YOUR TEMPLATE!
 -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.13.1: http://docutils.sourceforge.net/" />
   <title>PEP B -- Alternate location for System-Wide Installation on Linux</title>
   <style type="text/css">
 
 /*
 :Author: David Goodger
 :Contact: goodger@python.org
-:date: $Date: 2006-05-21 14:44:42 -0600 (Sun, 21 May 2006) $
+:date: $Date: 2006-05-21 22:44:42 +0200 (So, 21. Mai 2006) $
 :version: $Revision: 4564 $
 :copyright: This stylesheet has been placed in the public domain.
 
@@ -416,9 +416,8 @@ ul.auto-toc {
 </div>
 <div class="admonition">
 <p class="first admonition-title">XXX</p>
-<p>This might not end up as a PEP, since it's for pip, but it's still useful
+<p class="last">This might not end up as a PEP, since it's for pip, but it's still useful
 to point to a formal-ish document.</p>
-<p class="last">Relevant Fedora bug: <a class="reference external" href="https://bugzilla.redhat.com/show_bug.cgi?id=662034">https://bugzilla.redhat.com/show_bug.cgi?id=662034</a></p>
 </div>
 <div class="section" id="abstract">
 <h1><a class="toc-backref" href="#id1">Abstract</a></h1>
@@ -438,7 +437,26 @@ to point to a formal-ish document.</p>
 <h1><a class="toc-backref" href="#id3">Prior Art</a></h1>
 <div class="admonition">
 <p class="first admonition-title">XXX</p>
-<p class="last">How does Debian do it?</p>
+<p>Debian's solution:
+downstream patch of distutils <a class="reference external" href="http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/python2.7/trusty/view/head:/debian/patches/distutils-install-layout.diff#L281">http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/python2.7/trusty/view/head:/debian/patches/distutils-install-layout.diff#L281</a></p>
+<dl class="last docutils">
+<dt>Install paths:</dt>
+<dd><ul class="first last simple">
+<li>system-python: /usr/lib/dist_packages</li>
+<li>distutils, (sudo pip): /usr/local/lib/dist_packages</li>
+<li>pip: Permission Denied</li>
+<li>python compiled from source (default): /usr/local/lib/site_packages</li>
+</ul>
+</dd>
+<dt>Related disscussions:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://mail.python.org/pipermail/distutils-sig/2016-January/028080.html">https://mail.python.org/pipermail/distutils-sig/2016-January/028080.html</a></li>
+<li><a class="reference external" href="https://mail.python.org/pipermail/distutils-sig/2016-January/028087.html">https://mail.python.org/pipermail/distutils-sig/2016-January/028087.html</a></li>
+<li><a class="reference external" href="http://bugs.python.org/issue27924">http://bugs.python.org/issue27924</a></li>
+<li>Relevant Fedora bug: <a class="reference external" href="https://bugzilla.redhat.com/show_bug.cgi?id=662034">https://bugzilla.redhat.com/show_bug.cgi?id=662034</a></li>
+</ul>
+</dd>
+</dl>
 </div>
 </div>
 <div class="section" id="specification">
@@ -448,7 +466,170 @@ to point to a formal-ish document.</p>
 <p>Where to install? What does the FHS say?</p>
 <p>Priority of <tt class="docutils literal">/usr/lib</tt> vs. new location?</p>
 <p>What happens in virtualenvs?</p>
-<p class="last">Making an isolated &quot;System Python&quot; ignore pip-installed packages?</p>
+<p>Making an isolated &quot;System Python&quot; ignore pip-installed packages?</p>
+<p>previous discussion: <a class="reference external" href="https://groups.google.com/forum/#!topic/pypa-dev/r6qsAmJl9t0">https://groups.google.com/forum/#!topic/pypa-dev/r6qsAmJl9t0</a></p>
+<p>FHS:
+The /usr/local hierarchy is for use by the system administrator when installing software locally. It needs to
+be safe from being overwritten when the system software is updated.</p>
+<p>If we consider pip as a tool for system administrators, we don't violate FHS using
+/usr/local/lib/pythonX.Y/site_packages as default install path.</p>
+<p>The reason why Debian uses /dist_packages:
+&quot;The problem was this: if a sysadmin installed a from-source version of Python,
+say to do development or support some particular application environment, they
+would then install whatever libraries that application needed into
+/usr/local/lib/pythonX.Y/site-packages.  If /usr/local/.../site-packages was
+on the system Python's sys.path, then the act of building up your development
+environment could break system Python.&quot;</p>
+<dl class="docutils">
+<dt><strong>Solution 1:</strong></dt>
+<dd><p class="first">Result of long discussion on pypa devel 2 years ago, similar to Debian's solution,
+more flexible (local_prefix).</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Python options:</dt>
+<dd><ul class="first last">
+<li>is_system_python</li>
+<li>prefix</li>
+<li>local_prefix</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Python creates folders</dt>
+<dd><ul class="first last">
+<li>prefix/.../dist-packages if is_system_python else site-packages</li>
+<li>local_prefix/.../dist-packages if is_system_python else site-packages</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Distutils installs to</dt>
+<dd><ul class="first last">
+<li>local_prefix/.../dist-packages if is_system_python else site-packages</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>distutils --system installs to</dt>
+<dd><ul class="first last">
+<li>prefix/.../dist-packages if is_system_python else site-packages</li>
+<li>sudo pip installs to default distutils install location (local_prefix)</li>
+<li>pip will never touch prefix folder while prefix != localprefix</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="last docutils">
+<dt>Advantages:</dt>
+<dd><ul class="first last simple">
+<li>Specific location for each Python (system, built from source, ...)</li>
+</ul>
+</dd>
+<dt>Disadvantages:</dt>
+<dd><ul class="first last simple">
+<li>Necessary to change %{python3_sitelib|sitearch} macros</li>
+<li>Too many changes</li>
+<li>Too complicated</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>Solution 2:</strong></dt>
+<dd><ul class="first simple">
+<li><dl class="first docutils">
+<dt>Python options:</dt>
+<dd><ul class="first last">
+<li>prefix</li>
+<li>local_prefix</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Python creates folders</dt>
+<dd><ul class="first last">
+<li>prefix/.../site-packages</li>
+<li>local_prefix/.../site-packages</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Distutils installs to</dt>
+<dd><ul class="first last">
+<li>local_prefix/.../site-packages</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>distutils --system (flag for packaging purpose) installs to</dt>
+<dd><ul class="first last">
+<li>prefix/.../site-packages</li>
+<li>sudo pip installs to default distutils install location (local_prefix)</li>
+<li>pip will never touch prefix folder while prefix != localprefix
+explicit system installation possible --root/--target</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="last docutils">
+<dt>Advantages:</dt>
+<dd><ul class="first last simple">
+<li>System packages have their own location, separated from everything else</li>
+<li>Similar to RubyGems's solution in Fedora</li>
+<li>Changes in packaging macros not needed</li>
+</ul>
+</dd>
+<dt>Disadvantages:</dt>
+<dd><ul class="first last simple">
+<li>pip, distutils installed packages can collide with packages installed using Python from sources</li>
+<li>--system flag wouldn't work for python where prefix == local_prefix</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><strong>Solution 3:</strong></dt>
+<dd><p class="first">Proposed by Donald Stufft on distutils-sig.
+Mixed installation path, mechanism to prevent collisions. Pip can determine
+that package is already installed by system, dnf and distutils cannot.</p>
+<blockquote class="last">
+<ul class="simple">
+<li><a class="reference external" href="http://www.python.org/dev/peps/pep-0376">PEP 376</a> ignored by distutils</li>
+<li>Necessary to switch to .dist-info metadata directory (setup.py install)</li>
+<li>Implement logic to dnf, distutils to check if package isn't already installed</li>
+<li>INSTALLER file could help to resolve updating and removing of packages</li>
+</ul>
+</blockquote>
+</dd>
+</dl>
+<p><a class="reference external" href="../install_locations.html">Visualization</a></p>
+<dl class="last docutils">
+<dt><strong>Meeting conclusion:</strong></dt>
+<dd><dl class="first docutils">
+<dt>Patches of Python, distutils or pip not needed.</dt>
+<dd><ul class="first last simple">
+<li>split binaries of system-python and python</li>
+<li>set sys.prefix of python to /usr/local</li>
+<li>set sys.prefix of system_python to /usr</li>
+<li>require system_python in python</li>
+<li>include path to system-python libs (/usr/lib/...) in sys.path of python (implicitly set
+to /usr/local/... only)</li>
+<li>exclude everything except path to system-python libs from sys.path of system-python</li>
+<li>change macro %{__python3} to system-python (py3_install, py3_build will work automaticlly)</li>
+</ul>
+</dd>
+</dl>
+<p>sudo pip, python setup.py install will use python. Install locations from Solution2 will be
+used.</p>
+<p class="last">Problem with scripts that only require usr/bin/python3</p>
+</dd>
+</dl>
 </div>
 </div>
 <div class="section" id="backwards-compatibility">
