@@ -1,16 +1,22 @@
 This repository collects Python Enhancement Proposal (PEP) drafts for
 collaboration before they are sent to CPython's PEP repository.
 
-Rendered versions of these documents:
-https://fedora-python.github.io/pep-drafts/index.html
+A link to the rendered versions of the documents in this repository is at the
+top of the GitHub page.
+(If you aren't looking at GitHub, visit the `rendered pages for the original repo`_.)
+
+.. _rendered pages for the original repo: https://fedora-python.github.io/pep-drafts/index.html
 
 If you have a comment, please open an issue, or submit a pull request!
+If you want to add a new PEP, clone the repo and go ahead.
 
+To render the drafts as HTML locally, use ``make html``.
 
-To render the drafts as HTML, use ``make html``.
 To render into a ``gh-pages`` Git branch suitable for pushing,
 ``pip install --user ghp_import``, then use ``make gh-pages``.
-
+Then push the resulting branch (``git push origin gh-pages``).
+Make sure to update the link on your repo's GitHub repository to point to your
+version of the rendered files.
 
 Useful links:
 
